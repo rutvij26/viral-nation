@@ -81,12 +81,18 @@ const Query = objectType({
         searchString: stringArg(),
         skip: intArg(), // pagination start value
         take: intArg(), // pagination limit value
+        movieFilters: arg({
+          type: 'MovieFilterInput',
+        }),
+        // userFilters: arg({
+        //   type: 'MovieUserFilterInput',
+        // }),
         orderBy: arg({
           type: 'MovieOrderBy',
         }),
       },
       resolve: (_parent, args, context: Context) => {
-        const or = args.searchString
+        const searchFilter = args.searchString
           ? {
               OR: [
                 { movieName: { contains: args.searchString } },
@@ -94,8 +100,35 @@ const Query = objectType({
               ],
             }
           : {}
+
+        const movieFilter = args.movieFilters
+          ? {
+              AND: Object.entries(args.movieFilters).map(([key, value]) => {
+                return {
+                  [key]: value,
+                }
+              }),
+            }
+          : {}
+
+        const filters = {
+          ...searchFilter,
+          ...movieFilter,
+        }
+
+        // const movieUserFilter = args.userFilters
+        //   ? {
+        //       AND: Object.entries(args.userFilters).map(([key, value]) => {
+        //         return {
+        //           [key]: value,
+        //         }
+        //       }),
+        //     }
+        //   : {}
+
         return context.prisma.movie.findMany({
-          where: { ...or },
+          include: { createdBy: true },
+          where: { ...filters },
           skip: args.skip || undefined,
           take: args.take || undefined,
           orderBy: args.orderBy || undefined,
@@ -365,6 +398,22 @@ const MovieOrderBy = inputObjectType({
   },
 })
 
+const MovieFilterInput = inputObjectType({
+  name: 'MovieFilterInput',
+  definition(t) {
+    t.nullable.string('movieName')
+    t.nullable.int('createdById')
+  },
+})
+
+// const MovieUserFilterInput = inputObjectType({
+//   name: 'MovieUserFilterInput',
+//   definition(t) {
+//     t.nullable.string('username')
+//     t.nullable.string('email')
+//   },
+// })
+
 export const schema = makeSchema({
   types: [
     User,
@@ -375,6 +424,8 @@ export const schema = makeSchema({
     JwtPayload,
     MovieOrderBy,
     SortOrder,
+    MovieFilterInput,
+    // MovieUserFilterInput,
   ],
   outputs: {
     schema: __dirname + '/schema.graphql',

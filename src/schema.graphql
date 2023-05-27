@@ -21,6 +21,11 @@ type Movie {
   releaseDate: DateTime
 }
 
+input MovieFilterInput {
+  createdById: Int
+  movieName: String
+}
+
 input MovieOrderBy {
   releaseDate: SortOrder!
 }
@@ -35,7 +40,7 @@ type Mutation {
 }
 
 type Query {
-  allMovies(orderBy: MovieOrderBy, searchString: String, skip: Int, take: Int): [Movie]!
+  allMovies(movieFilters: MovieFilterInput, orderBy: MovieOrderBy, searchString: String, skip: Int, take: Int): [Movie]!
   allUsers: [User!]!
   movieById(id: Int): Movie
 }
