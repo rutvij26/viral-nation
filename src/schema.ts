@@ -76,6 +76,8 @@ const Query = objectType({
       type: Movie,
       args: {
         searchString: stringArg(),
+        skip: intArg(), // pagination start value
+        take: intArg(), // pagination limit value
       },
       resolve: (_parent, args, context: Context) => {
         const or = args.searchString
@@ -88,6 +90,8 @@ const Query = objectType({
           : {}
         return context.prisma.movie.findMany({
           where: { ...or },
+          skip: args.skip || undefined,
+          take: args.take || undefined,
         })
       },
     })
