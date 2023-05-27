@@ -17,6 +17,12 @@ type Movie {
   releaseDate: DateTime
 }
 
+type Mutation {
+  changePassword(currentPassword: String!, email: String!, newPassword: String!): String
+  createUser(email: String!, password: String!, username: String!): User!
+  loginUser(email: String!, password: String!): String
+}
+
 type Query {
   allMovies: [Movie]!
   allUsers: [User!]!
