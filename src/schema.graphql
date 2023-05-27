@@ -7,6 +7,10 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `dat
 """
 scalar DateTime
 
+type JwtPayload {
+  accessToken: String!
+}
+
 type Movie {
   createdBy: User
   createdById: Int
@@ -19,8 +23,8 @@ type Movie {
 
 type Mutation {
   changePassword(currentPassword: String!, email: String!, newPassword: String!): String
-  createUser(email: String!, password: String!, username: String!): User!
-  loginUser(email: String!, password: String!): String
+  createUser(email: String!, password: String!, username: String!): JwtPayload!
+  loginUser(email: String!, password: String!): JwtPayload
 }
 
 type Query {

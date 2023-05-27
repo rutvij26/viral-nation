@@ -9,6 +9,7 @@ import {
 import { Context } from './context'
 import { DateTimeResolver } from 'graphql-scalars'
 import { compare, hash } from 'bcryptjs'
+import { createAccessToken } from './auth'
 
 const DateTime = asNexusMethod(DateTimeResolver, 'date')
 
@@ -102,7 +103,7 @@ const Mutation = objectType({
      *  Constraints: Password should be hashed before being sent to the server, JWT should be sent after registration
      * */
     t.nonNull.field('createUser', {
-      type: 'User',
+      type: JwtPayload,
       args: {
         username: nonNull(stringArg()),
         email: nonNull(stringArg()),
@@ -123,13 +124,17 @@ const Mutation = objectType({
 
           const hashedPassword = await hash(args.password, 12)
 
-          return context.prisma.user.create({
+          const newUser = await context.prisma.user.create({
             data: {
               username: args.username,
               email: args.email,
               password: hashedPassword,
             },
           })
+
+          return {
+            accessToken: createAccessToken(newUser),
+          }
         } catch (error) {
           console.log(error)
           throw new Error(`${error}`)
@@ -143,7 +148,7 @@ const Mutation = objectType({
      * */
 
     t.field('loginUser', {
-      type: 'String',
+      type: JwtPayload,
       args: {
         email: nonNull(stringArg()),
         password: nonNull(stringArg()),
@@ -166,7 +171,9 @@ const Mutation = objectType({
             throw new Error(`Invalid password!`)
           }
 
-          return 'Login Successful!'
+          return {
+            accessToken: createAccessToken(user),
+          }
         } catch (error) {
           console.log(error)
           throw new Error(`${error}`)
@@ -235,8 +242,17 @@ const Mutation = objectType({
   },
 })
 
+const JwtPayload = objectType({
+  name: 'JwtPayload',
+  definition(t) {
+    t.nonNull.field('accessToken', {
+      type: 'String',
+    })
+  },
+})
+
 export const schema = makeSchema({
-  types: [User, Movie, Query, Mutation, DateTime],
+  types: [User, Movie, Query, Mutation, DateTime, JwtPayload],
   outputs: {
     schema: __dirname + '/schema.graphql',
     typegen: __dirname + '/generated/nexus.ts',
