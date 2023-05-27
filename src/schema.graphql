@@ -23,8 +23,11 @@ type Movie {
 
 type Mutation {
   changePassword(currentPassword: String!, email: String!, newPassword: String!): String
+  createMovie(description: String!, directorName: String!, movieName: String!, releaseDate: DateTime!): Movie
   createUser(email: String!, password: String!, username: String!): JwtPayload!
+  deleteMovieById(id: Int!): String
   loginUser(email: String!, password: String!): JwtPayload
+  updateMovieById(description: String, directorName: String, id: Int!, movieName: String, releaseDate: DateTime): Movie
 }
 
 type Query {

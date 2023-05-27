@@ -10,6 +10,9 @@ import { Context } from './context'
 import { DateTimeResolver } from 'graphql-scalars'
 import { compare, hash } from 'bcryptjs'
 import { createAccessToken } from './auth'
+import { nexusShield, allow } from 'nexus-shield'
+import { isAuthenticated } from './permissions'
+import { ForbiddenError } from 'apollo-server-errors'
 
 const DateTime = asNexusMethod(DateTimeResolver, 'date')
 
@@ -229,16 +232,92 @@ const Mutation = objectType({
 
     /** TODO: Create a Movie
      *  Requests should be authenticated using a JWT token in header
-     *  Arguments:
+     *  Arguments: movieName!, description!, directorName!, releaseDate!
      *  */
+    t.field('createMovie', {
+      type: 'Movie',
+      args: {
+        movieName: nonNull(stringArg()),
+        description: nonNull(stringArg()),
+        directorName: nonNull(stringArg()),
+        releaseDate: nonNull('DateTime'),
+      },
+      shield: isAuthenticated,
+      resolve: async (_parent, args, context: Context) => {
+        try {
+          return context.prisma.movie.create({
+            data: {
+              movieName: args.movieName,
+              description: args.description,
+              directorName: args.directorName,
+              releaseDate: args.releaseDate,
+              createdById: context.payload.userId,
+            },
+          })
+        } catch (error) {
+          throw new Error(`${error}`)
+        }
+      },
+    })
+
     /** TODO: Update a Movie
      *  Requests should be authenticated using a JWT token in header
-     *  Arguments:
+     *  Arguments: id!, movieName?, description?, directorName?, releaseDate?
      *  */
+
+    t.field('updateMovieById', {
+      type: 'Movie',
+      shield: isAuthenticated,
+      args: {
+        id: nonNull(intArg()),
+        movieName: stringArg(),
+        description: stringArg(),
+        directorName: stringArg(),
+        releaseDate: 'DateTime',
+      },
+      resolve: async (_parent, args, context: Context) => {
+        try {
+          return context.prisma.movie.update({
+            where: {
+              id: args.id,
+            },
+            data: {
+              movieName: args.movieName,
+              description: args?.description,
+              directorName: args?.directorName,
+              releaseDate: args?.releaseDate,
+              createdById: context.payload.userId,
+            },
+          })
+        } catch (error) {
+          throw new Error(`${error}`)
+        }
+      },
+    })
+
     /** TODO: Delete a Movie
      *  Requests should be authenticated using a JWT token in header
-     *  Arguments:
+     *  Arguments: id!
      *  */
+    t.field('deleteMovieById', {
+      type: 'String',
+      shield: isAuthenticated,
+      args: {
+        id: nonNull(intArg()),
+      },
+      resolve: async (_parent, args, context: Context) => {
+        try {
+          await context.prisma.movie.delete({
+            where: {
+              id: args.id,
+            },
+          })
+          return `Movie with id: ${args.id} is Deleted `
+        } catch (error) {
+          throw new Error(`${error}`)
+        }
+      },
+    })
   },
 })
 
@@ -269,4 +348,10 @@ export const schema = makeSchema({
       },
     ],
   },
+  plugins: [
+    nexusShield({
+      defaultError: new ForbiddenError('Unauthorized'),
+      defaultRule: allow,
+    }),
+  ],
 })
