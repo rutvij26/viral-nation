@@ -64,18 +64,31 @@ const Query = objectType({
     /** Query All Users */
     t.nonNull.list.nonNull.field('allUsers', {
       type: User,
-      resolve: (_parent, _args, context: Context) => {
+      resolve: (_parent, args, context: Context) => {
         return context.prisma.user.findMany()
       },
     })
 
     /** Query All Movies
-     *  Constraints: should include sorting, filtering, pagination
+     *  Constraints: should include sorting, filtering, pagination and search
      *  */
     t.nonNull.list.field('allMovies', {
       type: Movie,
-      resolve: (_parent, _args, context: Context) => {
-        return context.prisma.movie.findMany()
+      args: {
+        searchString: stringArg(),
+      },
+      resolve: (_parent, args, context: Context) => {
+        const or = args.searchString
+          ? {
+              OR: [
+                { movieName: { contains: args.searchString } },
+                { description: { contains: args.searchString } },
+              ],
+            }
+          : {}
+        return context.prisma.movie.findMany({
+          where: { ...or },
+        })
       },
     })
 
@@ -93,9 +106,6 @@ const Query = objectType({
         })
       },
     })
-
-    /** Search Movies By Name or Description
-     *  */
   },
 })
 
