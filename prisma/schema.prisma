@@ -1,0 +1,27 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://postgres:postgres@localhost:5432/viral-nation"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  movies    Movie[]  @relation("MovieToUser")
+}
+
+
+model Movie {
+  id            Int     @id @default(autoincrement())
+  movieName     String
+  description   String
+  directorName  String
+  releaseDate   DateTime
+  createdBy     User?   @relation("MovieToUser", fields: [createdById], references: [id])
+  createdById   Int?
+}
