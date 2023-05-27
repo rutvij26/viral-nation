@@ -1,5 +1,8 @@
 import {
+  arg,
   asNexusMethod,
+  enumType,
+  inputObjectType,
   intArg,
   makeSchema,
   nonNull,
@@ -78,6 +81,9 @@ const Query = objectType({
         searchString: stringArg(),
         skip: intArg(), // pagination start value
         take: intArg(), // pagination limit value
+        orderBy: arg({
+          type: 'MovieOrderBy',
+        }),
       },
       resolve: (_parent, args, context: Context) => {
         const or = args.searchString
@@ -92,6 +98,7 @@ const Query = objectType({
           where: { ...or },
           skip: args.skip || undefined,
           take: args.take || undefined,
+          orderBy: args.orderBy || undefined,
         })
       },
     })
@@ -344,8 +351,31 @@ const JwtPayload = objectType({
   },
 })
 
+const SortOrder = enumType({
+  name: 'SortOrder',
+  members: ['asc', 'desc'],
+})
+
+const MovieOrderBy = inputObjectType({
+  name: 'MovieOrderBy',
+  definition(t) {
+    t.nonNull.field('releaseDate', {
+      type: 'SortOrder',
+    })
+  },
+})
+
 export const schema = makeSchema({
-  types: [User, Movie, Query, Mutation, DateTime, JwtPayload],
+  types: [
+    User,
+    Movie,
+    Query,
+    Mutation,
+    DateTime,
+    JwtPayload,
+    MovieOrderBy,
+    SortOrder,
+  ],
   outputs: {
     schema: __dirname + '/schema.graphql',
     typegen: __dirname + '/generated/nexus.ts',

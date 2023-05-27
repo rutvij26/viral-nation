@@ -21,6 +21,10 @@ type Movie {
   releaseDate: DateTime
 }
 
+input MovieOrderBy {
+  releaseDate: SortOrder!
+}
+
 type Mutation {
   changePassword(currentPassword: String!, email: String!, newPassword: String!): String
   createMovie(description: String!, directorName: String!, movieName: String!, releaseDate: DateTime!): Movie
@@ -31,9 +35,14 @@ type Mutation {
 }
 
 type Query {
-  allMovies(searchString: String, skip: Int, take: Int): [Movie]!
+  allMovies(orderBy: MovieOrderBy, searchString: String, skip: Int, take: Int): [Movie]!
   allUsers: [User!]!
   movieById(id: Int): Movie
+}
+
+enum SortOrder {
+  asc
+  desc
 }
 
 type User {
