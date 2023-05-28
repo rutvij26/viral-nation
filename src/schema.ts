@@ -104,11 +104,7 @@ const Query = objectType({
         const movieFilter = args.movieFilters
           ? {
               AND: Object.entries(args.movieFilters).map(([key, value]) => {
-                if (value !== null) {
-                  return {
-                    [key]: value,
-                  }
-                }
+                return value !== null ? { [key]: value } : {}
               }),
             }
           : {}
