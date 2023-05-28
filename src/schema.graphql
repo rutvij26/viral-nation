@@ -30,6 +30,10 @@ input MovieOrderBy {
   releaseDate: SortOrder!
 }
 
+input MovieUserFilterInput {
+  email: String
+}
+
 type Mutation {
   changePassword(currentPassword: String!, email: String!, newPassword: String!): String
   createMovie(description: String!, directorName: String!, movieName: String!, releaseDate: DateTime!): Movie
@@ -40,7 +44,7 @@ type Mutation {
 }
 
 type Query {
-  allMovies(movieFilters: MovieFilterInput, orderBy: MovieOrderBy, searchString: String, skip: Int, take: Int): [Movie]!
+  allMovies(movieFilters: MovieFilterInput, orderBy: MovieOrderBy, searchString: String, skip: Int, take: Int, userFilters: MovieUserFilterInput): [Movie]!
   allUsers: [User!]!
   movieById(id: Int): Movie
 }

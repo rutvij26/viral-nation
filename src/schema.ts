@@ -84,9 +84,9 @@ const Query = objectType({
         movieFilters: arg({
           type: 'MovieFilterInput',
         }),
-        // userFilters: arg({
-        //   type: 'MovieUserFilterInput',
-        // }),
+        userFilters: arg({
+          type: 'MovieUserFilterInput',
+        }),
         orderBy: arg({
           type: 'MovieOrderBy',
         }),
@@ -111,20 +111,23 @@ const Query = objectType({
             }
           : {}
 
+        const userFilter = args.userFilters
+          ? {
+              createdBy: {
+                OR: Object.entries(args.userFilters).map(([key, value]) => {
+                  return {
+                    [key]: value,
+                  }
+                }),
+              },
+            }
+          : {}
+
         const filters = {
           ...searchFilter,
           ...movieFilter,
+          ...userFilter,
         }
-
-        // const movieUserFilter = args.userFilters
-        //   ? {
-        //       AND: Object.entries(args.userFilters).map(([key, value]) => {
-        //         return {
-        //           [key]: value,
-        //         }
-        //       }),
-        //     }
-        //   : {}
 
         return context.prisma.movie.findMany({
           include: { createdBy: true },
@@ -406,13 +409,12 @@ const MovieFilterInput = inputObjectType({
   },
 })
 
-// const MovieUserFilterInput = inputObjectType({
-//   name: 'MovieUserFilterInput',
-//   definition(t) {
-//     t.nullable.string('username')
-//     t.nullable.string('email')
-//   },
-// })
+const MovieUserFilterInput = inputObjectType({
+  name: 'MovieUserFilterInput',
+  definition(t) {
+    t.nullable.string('email')
+  },
+})
 
 export const schema = makeSchema({
   types: [
@@ -425,7 +427,7 @@ export const schema = makeSchema({
     MovieOrderBy,
     SortOrder,
     MovieFilterInput,
-    // MovieUserFilterInput,
+    MovieUserFilterInput,
   ],
   outputs: {
     schema: __dirname + '/schema.graphql',
