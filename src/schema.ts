@@ -19,6 +19,9 @@ import { ForbiddenError } from 'apollo-server-errors'
 
 const DateTime = asNexusMethod(DateTimeResolver, 'date')
 
+/**
+ * User Object
+ */
 const User = objectType({
   name: 'User',
   definition(t) {
@@ -39,6 +42,9 @@ const User = objectType({
   },
 })
 
+/**
+ * Movie Object
+ */
 const Movie = objectType({
   name: 'Movie',
   definition(t) {
@@ -61,6 +67,9 @@ const Movie = objectType({
   },
 })
 
+/**
+ * All Query definitions
+ */
 const Query = objectType({
   name: 'Query',
   definition(t) {
@@ -154,6 +163,9 @@ const Query = objectType({
   },
 })
 
+/**
+ * All Mutation definitions
+ */
 const Mutation = objectType({
   name: 'Mutation',
   definition(t) {
@@ -376,6 +388,9 @@ const Mutation = objectType({
   },
 })
 
+/**
+ * JWT Authentication Object
+ */
 const JwtPayload = objectType({
   name: 'JwtPayload',
   definition(t) {
@@ -385,11 +400,17 @@ const JwtPayload = objectType({
   },
 })
 
+/**
+ * Sort Order enum
+ */
 const SortOrder = enumType({
   name: 'SortOrder',
   members: ['asc', 'desc'],
 })
 
+/**
+ * Input Object Type for Ordering Movies by release date
+ */
 const MovieOrderBy = inputObjectType({
   name: 'MovieOrderBy',
   definition(t) {
@@ -399,6 +420,9 @@ const MovieOrderBy = inputObjectType({
   },
 })
 
+/**
+ * Input Object Type for Filtering Movies
+ */
 const MovieFilterInput = inputObjectType({
   name: 'MovieFilterInput',
   definition(t) {
@@ -407,6 +431,9 @@ const MovieFilterInput = inputObjectType({
   },
 })
 
+/**
+ * Input Object Type for Filtering Movies by User email id
+ */
 const MovieUserFilterInput = inputObjectType({
   name: 'MovieUserFilterInput',
   definition(t) {
@@ -414,14 +441,17 @@ const MovieUserFilterInput = inputObjectType({
   },
 })
 
+/**
+ * Generating GraphQL schema from Nexus Types
+ */
 export const schema = makeSchema({
   types: [
     User,
     Movie,
-    Query,
-    Mutation,
     DateTime,
     JwtPayload,
+    Query,
+    Mutation,
     MovieOrderBy,
     SortOrder,
     MovieFilterInput,
@@ -444,6 +474,7 @@ export const schema = makeSchema({
     ],
   },
   plugins: [
+    // Shield for adding middleware on each protected query
     nexusShield({
       defaultError: new ForbiddenError('Unauthorized'),
       defaultRule: allow,
