@@ -107,19 +107,18 @@ const userDataArray = [
   },
 ]
 
-const passwordHashedUserData = await Promise.all(
-  userDataArray.map(async (user) => {
-    const hashedPwd = await hashedPassword(user.password)
-    return {
-      ...user,
-      password: hashedPwd,
-    }
-  }),
-)
-
-const userData: Prisma.UserCreateInput[] = passwordHashedUserData
-
 async function main() {
+  const passwordHashedUserData = await Promise.all(
+    userDataArray.map(async (user) => {
+      const hashedPwd = await hashedPassword(user.password)
+      return {
+        ...user,
+        password: hashedPwd,
+      }
+    }),
+  )
+
+  const userData: Prisma.UserCreateInput[] = passwordHashedUserData
   console.log(`Start seeding ...`)
   for (const u of userData) {
     const user = await prisma.user.create({
