@@ -1,8 +1,13 @@
 import { PrismaClient, Prisma } from '@prisma/client'
+import { hash } from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
-const userData: Prisma.UserCreateInput[] = [
+const hashedPassword = async (pwd: string) => {
+  return await hash(pwd, 12)
+}
+
+const userDataArray = [
   {
     username: 'Alice',
     email: 'alice@prisma.io',
@@ -101,6 +106,18 @@ const userData: Prisma.UserCreateInput[] = [
     },
   },
 ]
+
+const passwordHashedUserData = await Promise.all(
+  userDataArray.map(async (user) => {
+    const hashedPwd = await hashedPassword(user.password)
+    return {
+      ...user,
+      password: hashedPwd,
+    }
+  }),
+)
+
+const userData: Prisma.UserCreateInput[] = passwordHashedUserData
 
 async function main() {
   console.log(`Start seeding ...`)
